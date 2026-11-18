@@ -221,3 +221,17 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# auto-grader-pilot
+runs/
+.venv/
+
+
+.tmp/
+__pycache__/
+*.pyc
+
+
+# 样图含学生笔迹/密号，不入库
+assets/samples/
+

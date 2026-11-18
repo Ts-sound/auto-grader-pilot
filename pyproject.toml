@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "auto-grader-pilot"
+version = "0.1.0"
+description = "Screenshot -> vision OCR -> score -> submit -> next student, driven by PyAutoGUI + pynput"
+requires-python = ">=3.11"
+dependencies = [
+    "pyautogui>=0.9.54",
+    "pynput>=1.7.7",
+    "pillow>=10.0",
+    "opencv-python>=4.9",
+    "openai>=1.40",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+agp = "agp.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,46 @@
+﻿# auto-grader-pilot 配置
+# 坐标全部是「物理像素」，基于 2560x1600 @175% 缩放、Edge 最大化实测。
+# 脚本启动时会调用 SetProcessDpiAwarenessContext(-4)，所以这里的值不要按逻辑像素填。
+
+vision:
+  base_url: http://192.168.0.104:8080/v1   # 本机 llama.cpp 服务；换云服务改成对应兼容地址
+  api_key: ""                              # 本地无 key，留空；云服务填 ${AGP_API_KEY}
+  model: models/Qwen3.8-27B-UD-Q4_K_M.gguf # 用 GET /v1/models 查到的 id
+  timeout_s: 300                           # 27B Q4 本地跑，读图约 15s，别设太小
+  retries: 2
+  disable_thinking: true                   # 推理模型先吐思考会占 token 又拖慢，关掉
+  max_tokens: 2048                         # 读图 300 字 + 余量；thinking 关着时够用
+
+templates_dir: assets/templates
+
+regions:
+  page:   {left: 0,    top: 140, width: 2130, height: 1230}   # 送视觉模型：标题栏 + 答题卡
+  answer: {left: 413,  top: 482, width: 1705, height: 663}    # 答题卡白纸，用于换卷检测
+  header: {left: 1670, top: 151, width: 874,  height: 80}     # 题号/分配/已阅/密号
+
+controls:
+  confidence: 0.85
+  score_input: {templates: [input_score], point: [2255, 452]}
+  submit:      {templates: [btn_submit],  point: [2424, 733]}
+  full_marks:  {point: [2181, 316]}
+  zero:        {point: [2257, 316]}
+  digits:                       # 打分板数字按钮中心点
+    "0": [2200, 600]
+    "1": [2268, 600]
+    "2": [2336, 600]
+    "3": [2403, 600]
+    "4": [2471, 600]
+    "5": [2200, 651]
+    "6": [2268, 651]
+    "7": [2336, 651]
+
+grading:
+  answer_key: answers.json
+  review_below: null      # 填数字：低于该分不自动提交，暂停等人；null = 全部自动提交
+
+loop:
+  next_timeout_s: 30      # 提交后等下一份试卷
+  change_ratio: 0.01      # 答题区像素变化占比超过此值 = 换卷了
+  settle_s: 1.5           # 点提交后等一下再抓图
+  max_rounds: 0           # 0 = 不限
+
