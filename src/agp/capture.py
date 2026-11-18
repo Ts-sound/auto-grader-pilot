@@ -1,8 +1,9 @@
-"""Screen capture helpers. Must call init_dpi() before any grab on scaled displays."""
+﻿"""Screen capture helpers. Must call init_dpi() before any grab on scaled displays."""
 
 from __future__ import annotations
 
 import ctypes
+import ctypes.wintypes
 import hashlib
 from pathlib import Path
 
@@ -36,6 +37,21 @@ def init_dpi() -> str:
         return "system"
 
 
+def can_control_mouse() -> bool:
+    """探一下当前进程能不能真正移动鼠标。
+
+    低完整性级别（沙箱/受限令牌）下 SetCursorPos 会静默失败，点击全落空，
+    先探一次比跑到第 50 张卷子才发现要强。
+    """
+    try:
+        user32 = ctypes.windll.user32
+        pt = ctypes.wintypes.POINT()
+        user32.GetCursorPos(ctypes.byref(pt))
+        return bool(user32.SetCursorPos(pt.x, pt.y))
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def grab(region: tuple[int, int, int, int] | None = None) -> Image.Image:
     import pyautogui
 
@@ -63,3 +79,4 @@ def diff_ratio(a: Image.Image, b: Image.Image) -> float:
     pa, pb = ga.tobytes(), gb.tobytes()
     changed = sum(1 for x, y in zip(pa, pb) if abs(x - y) > 24)
     return changed / len(pa)
+

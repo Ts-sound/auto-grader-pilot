@@ -1,4 +1,4 @@
-"""The loop: capture -> read -> score -> submit -> wait for the next paper."""
+﻿"""The loop: capture -> read -> score -> submit -> wait for the next paper."""
 
 from __future__ import annotations
 
@@ -175,6 +175,7 @@ class Controller:
             return None
 
         if self.confirm:
+            self.log.info("等待人工确认: 建议 %g 分", score)
             action, chosen = self.ask_submit(graded)
             if action == "quit":
                 self.log.info("人工选择退出")
@@ -185,14 +186,31 @@ class Controller:
                 self.event({"round": self.round, "event": "manual_skip", "score": graded["score"]})
                 return None
             if chosen != score:
-                self.log.info("人工改分 %.1f -> %.1f", score, chosen)
+                self.log.info("人工改分 %g -> %g", score, chosen)
+            else:
+                self.log.info("人工确认: 按 %g 分提交", chosen)
             score = chosen
 
         how = self.ui.set_score(score)
         self.log.debug("set_score -> %s", how)
         self.ui.submit()
+        self.log.info("已提交 %g/%g 分（%s）", score, graded["max"], how)
         self.event({"round": self.round, "event": "submitted", "how": how, "score": score})
         return answer_img
+
+    def round_with_cursor(self, baseline):
+        """跑一轮，无论成功/跳过/异常，都把鼠标放回原位。"""
+        origin = None
+        if self.cfg["loop"].get("restore_mouse", True):
+            try:
+                origin = self.ui.mouse_pos()
+            except Exception as exc:  # noqa: BLE001
+                self.log.debug("读鼠标位置失败: %s", exc)
+        try:
+            return self.one_round(baseline)
+        finally:
+            if origin is not None:
+                self.ui.restore_mouse(origin)
 
     # ---------- main ----------
 
@@ -223,12 +241,12 @@ class Controller:
             if self._single:
                 self._single = False
                 self._running.clear()
-                self.one_round(baseline)
+                self.round_with_cursor(baseline)
                 if once:
                     break
                 continue
 
-            handled = self.one_round(baseline)
+            handled = self.round_with_cursor(baseline)
             if handled is None:  # paused / skipped: restart from the current screen
                 continue
 
@@ -247,4 +265,5 @@ class Controller:
 
         self.log.info("stopped after %d rounds", self.round)
         self.event({"event": "stop", "rounds": self.round})
+
 

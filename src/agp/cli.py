@@ -33,6 +33,11 @@ def main(argv: list[str] | None = None) -> int:
         cfg, run_dir, dry_run=args.dry_run, debug=args.debug, confirm=args.confirm
     )
     ctl.log.info("dpi=%s run_dir=%s", dpi, run_dir)
+    if not args.dry_run and not capture.can_control_mouse():
+        ctl.log.warning(
+            "当前进程无法移动鼠标（低权限/沙箱里跑），点击不会生效；"
+            "请在普通 PowerShell 窗口里运行，别在受限终端里跑"
+        )
     try:
         ctl.run(max_rounds=args.max_rounds, once=args.once)
     except KeyboardInterrupt:

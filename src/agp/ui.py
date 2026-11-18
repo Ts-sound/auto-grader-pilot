@@ -43,6 +43,19 @@ class UI:
         if not self.dry:
             self.g.click(x, y)
 
+    def mouse_pos(self) -> tuple[int, int]:
+        return self.g.position()
+
+    def restore_mouse(self, point: tuple[int, int]) -> None:
+        """点完把鼠标放回原处，别把用户的指针留在打分板上。"""
+        if self.dry:
+            return
+        try:
+            self.g.moveTo(int(point[0]), int(point[1]), duration=0.15)
+            self.log.debug("mouse back to %s", point)
+        except Exception as exc:  # noqa: BLE001 - 鼠标被别的程序抢了也不该中断批改
+            self.log.debug("restore mouse failed: %s", exc)
+
     def click_control(self, key: str) -> None:
         """controls[key] = {templates: [...], point: [x, y]} — template first, point as fallback."""
         spec = self.controls[key]
