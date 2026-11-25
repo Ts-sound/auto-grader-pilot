@@ -41,7 +41,7 @@ grading:
 loop:
   next_timeout_s: 30      # 提交后等下一份试卷
   change_ratio: 0.01      # 答题区像素变化占比超过此值 = 换卷了
-  settle_s: 3             # 点提交后等一下再抓图（等页面刷新/动画结束）
+  settle_s: 2             # 点提交后等一下再抓图（等页面刷新/动画结束）
   restore_mouse: true     # 点完把鼠标放回原来的位置
   max_rounds: 0           # 0 = 不限
 
